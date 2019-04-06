@@ -8,24 +8,71 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool _isFormShow = false;
-  void _clickChart(){}
-  void _clickAccount(){}
+  void _clickChart(){
+    debugPrint("Chart is clicked");
+  }
+  void _clickAccount(){
+    debugPrint("Account is clicked");
+  }
   void _clickFloatingActionButton(){
     setState(() {
       _isFormShow = !_isFormShow;
     });
   }
-  String _number = "0.0";
+  String _account = "工资卡";
+  String _number = "0";
   String _remark = "";
-  String _type = "选择分类";
-  String _date = "选择日期";
+  String _type = "零食...";
+  String _date = "04/06";
   String _mode = "num";
-  void _selectDate(){}
-  void _selectType(){}
-  void _numOnTap(v){debugPrint(v);}
+  void _selectDate(){
+    debugPrint("Clicked Date Selector");
+  }
+  void _selectMode(v){
+    debugPrint("Clicked Mode Selector : $v");
+  }
+  void _numOnTap(v){
+    var num = _number;
+    if(v == "x"){
+      if(num.length<=1){
+        num = "0";
+      }else{
+        num = num.substring(0,num.length-1);
+      }
+    }
+    else if(v == "C"){
+      num = "0";
+    }
+    else if(v == "."){
+      if(num.indexOf(".")==-1){
+        num+=v;
+      }
+    }
+    else{
+      if(num == "0"){
+        num = v;
+      }else{
+        if(num.indexOf(".")!=-1&&num.length-num.indexOf(".")>=3){
+
+        }else{
+          num += v;
+        }
+
+      }
+
+    }
+    setState(() {
+      _number = num;
+    });
+  }
   void _remarkOnChange(v){setState(() {
     _remark = v;
-  });}
+  });
+  debugPrint(_remark);
+  }
+  void _selectRemarkImg(){
+    debugPrint("Clicked Remark Img Icon");
+  }
 
 
 
@@ -75,7 +122,7 @@ class _HomeState extends State<Home> {
           color: Theme.of(context).backgroundColor,
           child:Container(
             height: _isFormShow?350.0:50.0,
-            child: _isFormShow?FormBottom(_date,_number,_remark,_type,_mode,_selectDate,_selectType,_numOnTap,_remarkOnChange):NormalBottom(),
+            child: _isFormShow?FormBottom(_account,_date,_number,_remark,_type,_mode,_selectDate,_selectMode,_numOnTap,_remarkOnChange,_selectRemarkImg):NormalBottom(),
           )
 
       ),
@@ -97,7 +144,7 @@ class NormalBottom extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: 5.0,horizontal: 16.0),
               height: 30.0,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(16.0)
               ),
               child: Text(
@@ -123,20 +170,68 @@ class FormBottom extends StatelessWidget {
   final String date;
   final String mode;
   final VoidCallback selectDate;
-  final VoidCallback selectType;
+  final selectMode;
   final remarkOnChange;
   final numOnTap;
+  final selectRemarkImg;
+  final account;
   FormBottom(
+      this.account,
     this.date,
     this.number,
     this.remark,
     this.type,
     this.mode,
     this.selectDate,
-    this.selectType,
+    this.selectMode,
     this.numOnTap,
     this.remarkOnChange,
+    this.selectRemarkImg
   );
+
+  Widget generate_num_key_bord(BuildContext context){
+    var keys = [["1","4","7","."],["2","5","8","0"],["3","6","9","00"],["x","C"]];
+    List<Widget> widget_list = [];
+    for(var i = 0;i<keys.length;i++){
+      List<Widget> row_items = [];
+      for(var j = 0;j<keys[i].length;j++){
+        var row_item = Expanded(
+          flex: i==3&&j==1?2:1,
+          child: FlatButton(
+            child: i==3&&j==0?Icon(
+              Icons.backspace,
+              color: Colors.grey,
+            ):Text(
+              keys[i][j],
+              style: TextStyle(
+                color: Colors.grey,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0)
+            ),
+            color: Colors.grey[200],
+            onPressed: (){
+              numOnTap(keys[i][j]);
+            },
+          ),
+        );
+        row_items.add(row_item);
+        row_items.add(SizedBox(height: 8.0,));
+      }
+      var col_item = Expanded(
+        child: Column(
+
+          children: row_items,
+        ),
+      );
+      widget_list.add(col_item);
+    }
+    return Row(
+      children: widget_list
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -149,7 +244,7 @@ class FormBottom extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               IconButton(
-                onPressed: (){},
+                onPressed: selectRemarkImg,
                 icon: Icon(
                   Icons.add_photo_alternate,
                   color: Colors.grey,
@@ -157,9 +252,24 @@ class FormBottom extends StatelessWidget {
               ),
               Expanded(
                 child: TextField(
+                  onChanged: remarkOnChange,
                   decoration: InputDecoration(
                     labelText: "备注",
-                    border: InputBorder.none
+                    labelStyle: TextStyle(
+                      fontSize: 14.0,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 10.0,
+                      horizontal: 16.0
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                      borderSide: BorderSide.none
+                    )
                   ),
                 ),
               ),
@@ -170,71 +280,89 @@ class FormBottom extends StatelessWidget {
           // 数字显示、类型、日期
           Row(
             children: <Widget>[
-              SizedBox(width: 16.0,),
+              SizedBox(width: 8.0,),
               Expanded(
+                flex: 1,
                 child: FlatButton(
-                  onPressed: (){},
+                  onPressed: (){
+                    selectMode("type");
+                  },
                   child: Text(
                     type,
                     style: TextStyle(
-                      color: Colors.grey[300],
+                      color: Colors.white,
                       fontSize: 12.0,
                       fontWeight: FontWeight.bold
                     ),
                   ),
-                  color: Colors.grey,
+                  color: Colors.redAccent[100],
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16.0)
                   )
                 )
               ),
-              SizedBox(width: 8.0,),
+              SizedBox(width: 4.0,),
               Expanded(
+                flex: 1,
                   child: FlatButton(
-                      onPressed: (){},
+                      onPressed: selectDate,
                       child: Text(
                         date,
                         style: TextStyle(
-                          color: Colors.grey[300],
+                          color: Colors.white,
                           fontSize: 12.0,
                           fontWeight: FontWeight.bold
                         ),
                       ),
-                      color: Colors.grey,
+                      color: Colors.blueAccent[100],
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16.0)
                       )
                   )
               ),
-              SizedBox(width: 10.0,),
+              SizedBox(width: 4.0,),
+              Expanded(
+                  flex: 1,
+                  child: FlatButton(
+                      onPressed: (){
+                        selectMode("account");
+                      },
+                      child: Text(
+                        account,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.bold
+                        ),
+                      ),
+                      color: Colors.orangeAccent[100],
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0)
+                      )
+                  )
+              ),
+              SizedBox(width: 16.0,),
               Expanded(
                 flex: 2,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    Text(
-                      number,
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 32.0,
-                      ),
-                    )
-                  ],
-                ),
+                child: Text(
+                  number.substring(number.length>12?number.length-12:0),
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                  style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                    fontSize: 22.0,
+                  ),
+                )
               ),
-              SizedBox(width: 24.0,),
+              SizedBox(width: 10.0,),
             ],
           ),
           Divider(),
           // 数字键盘
           Expanded(
-            child: Row(
-              children: <Widget>[
-                Column()
-              ],
-            ),
+            child: generate_num_key_bord(context)
           )
         ],
       ),
